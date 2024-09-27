@@ -32,8 +32,8 @@ public class Exam {
     private LocalDate date;
     private boolean cancelled;
     private boolean success;
-    private boolean isLatestAttemptInModule = true;
     private String comment;
+    private long sourceId;
 
     public Exam() {
     }
@@ -45,7 +45,8 @@ public class Exam {
                 boolean cancelled,
                 boolean success,
                 String comment,
-                ArrayList<Result> results) {
+                ArrayList<Result> results,
+                long sourceId) {
         this.mentor = mentor;
         this.student = student;
         this.module = module;
@@ -54,6 +55,7 @@ public class Exam {
         this.success = success;
         this.comment = comment;
         this.results = results;
+        this.sourceId = sourceId;
     }
 
     public void addResult(Result result) {

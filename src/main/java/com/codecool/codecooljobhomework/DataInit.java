@@ -42,19 +42,19 @@ public class DataInit {
 
     private void initializeExam() {
         Exam exam = new Exam();
-        exam.setStudent(codeCoolerRepository.findByEmail("peter.szarka@codecool.com"));
-        exam.setMentor(codeCoolerRepository.findByEmail("foo@bar.com"));
+        exam.setStudent(codeCoolerRepository.findByEmail("foo@bar.com"));
+        exam.setMentor(codeCoolerRepository.findByEmail("peter.szarka@codecool.com"));
         exam.setCancelled(false);
         exam.setDate(LocalDate.now());
         exam.setModule(Module.OOP);
         exam.setComment("Not bad");
         exam.setResults(List.of(new Result(DimensionEnum.CLEAN_CODE, 80),
                 new Result(DimensionEnum.COMMUNICATION, 70),
-                new Result(DimensionEnum.CODE_NAVIGATION, 100),
+                new Result(DimensionEnum.CODING, 100),
                 new Result(DimensionEnum.GEEKNESS, 120)
         ));
         exam.setSuccess(false);
-        exam.setLatestAttemptInModule(true);
+        exam.setSourceId(200);
         examRepository.save(exam);
     }
 
@@ -109,7 +109,7 @@ public class DataInit {
                 "  ]\n" +
                 "}";
         String json3 = "{\n" +
-                "  \"module\": \"Web\",\n" +
+                "  \"module\": \"ProgBasics\",\n" +
                 "  \"mentor\": \"mano.fabian@codecool.com\",\n" +
                 "  \"student\": \"foo@bar.com\",\n" +
                 "  \"date\": \"2024-05-11\",\n" +
@@ -131,7 +131,8 @@ public class DataInit {
                 "    }\n" +
                 "  ]\n" +
                 "}";
-        String json4 = "{\"module\": \"Web\",\n" +
+        String json4 = "{\n" +
+                "  \"module\": \"Web\",\n" +
                 "  \"mentor\": \"peter.szarka@codecool.com\",\n" +
                 "  \"student\": \"foo@bar.com\",\n" +
                 "  \"date\": \"2024-05-21\",\n" +
@@ -139,16 +140,66 @@ public class DataInit {
                 "  \"success\": false,\n" +
                 "  \"comment\": \"Wrote spaghetti code, and tried to sell it. Nice page, though.\",\n" +
                 "  \"results\": [\n" +
-                "    {\"dimension\": \"Coding\",\n" +
-                "      \"result\": 20},\n" +
-                "    {\"dimension\": \"HTML\",\n" +
-                "      \"result\": 100},\n" +
-                "    {\"dimension\": \"Communication\",\n" +
-                "      \"result\": 80}\n" +
-                "  ]}\n";
-        sourceRepository.save(new Source(json1));
-        sourceRepository.save(new Source(json2));
-        sourceRepository.save(new Source(json3));
-        sourceRepository.save(new Source(json4));
+                "    {\n" +
+                "      \"dimension\": \"Coding\",\n" +
+                "      \"result\": 20\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"dimension\": \"HTML\",\n" +
+                "      \"result\": 100\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"dimension\": \"Communication\",\n" +
+                "      \"result\": 80\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+        String json5 = "{\n" +
+                "  \"module\": \"Web\",\n" +
+                "  \"mentor\": \"peter.szarka@codecool.com\",\n" +
+                "  \"student\": \"foo@bar.com\",\n" +
+                "  \"date\": \"2024-07-21\",\n" +
+                "  \"cancelled\": false,\n" +
+                "  \"success\": false,\n" +
+                "  \"comment\": \"Wrote spaghetti code, and tried to sell it. Nice page, though.\",\n" +
+                "  \"results\": [\n" +
+                "    {\n" +
+                "      \"dimension\": \"Coding\",\n" +
+                "      \"result\": 20\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"dimension\": \"HTML\",\n" +
+                "      \"result\": 100\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"dimension\": \"Communication\",\n" +
+                "      \"result\": 80\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+        String json6 = "{\n" +
+                "  \"module\": \"Oop\",\n" +
+                "  \"mentor\": \"peter.szarka@codecool.com\",\n" +
+                "  \"student\": \"foo@bar.com\",\n" +
+                "  \"date\": \"2024-07-30\",\n" +
+                "  \"cancelled\": false,\n" +
+                "  \"success\": false,\n" +
+                "  \"comment\": \"Wrote spaghetti code, and tried to sell it. Nice page, though.\",\n" +
+                "  \"results\": [\n" +
+                "    {\n" +
+                "      \"dimension\": \"Coding\",\n" +
+                "      \"result\": 20\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"dimension\": \"HTML\",\n" +
+                "      \"result\": 100\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"dimension\": \"Communication\",\n" +
+                "      \"result\": 80\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+        sourceRepository.saveAll(List.of(new Source(json1), new Source(json2), new Source(json3), new Source(json4), new Source(json5), new Source(json6)));
     }
 }

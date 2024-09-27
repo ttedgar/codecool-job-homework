@@ -12,9 +12,12 @@ import com.codecool.codecooljobhomework.target.repository.ExamRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -39,13 +42,13 @@ public class ExamService {
     @Transactional
     public void createExam(NewExamDto newExamDto) {
         Exam exam = mapNewExamDtoToExam(newExamDto);
-        updateLatestAttemptInModule(newExamDto.module());
         examRepository.save(exam);
     }
 
     public boolean synchronize() {
-        if (sourceRepository.count() == examRepository.count()) return false;
-        List<Source> rawData = sourceRepository.findAll();
+        List<Long> missingSourceIds = getMissingSourceIds();
+        if (missingSourceIds.isEmpty()) return false;
+        List<Source> rawData = sourceRepository.findAllByIdIn(missingSourceIds);
         for (Source source : rawData) {
             mapJsonToExam(source);
         }
@@ -65,11 +68,6 @@ public class ExamService {
         return exam;
     }
 
-    private void updateLatestAttemptInModule(Module module) {
-        List<Exam> exams = examRepository.findByModule(module);
-        exams.forEach(exam -> exam.setLatestAttemptInModule(false));
-    }
-
     public List<Exam> getExams() {
         return examRepository.findAll();
     }
@@ -78,6 +76,8 @@ public class ExamService {
         try {
             Map<String, Object> examMap = objectMapper.readValue(source.getContent(), Map.class);
             Exam exam = new Exam();
+            exam.setSourceId(source.getId());
+
             String module = (String) examMap.get("module");
             if (module != null) exam.setModule(Module.valueOf(module.toUpperCase()));
 
@@ -99,19 +99,43 @@ public class ExamService {
             String comment = (String) examMap.get("comment");
             if (comment != null) exam.setComment(comment);
 
-            List<Map<String, Object>> resultsList = (List<Map<String, Object>>) examMap.get("results");
-            if (resultsList != null) {
-                for (Map<String, Object> result : resultsList) {
-                    Result resultObject = new Result();
-                    resultObject.setDimension(DimensionEnum.valueOf(result.get("dimension").toString().toUpperCase()));
-                    resultObject.setResult((Integer) result.get("result"));
-                    exam.addResult(resultObject);
-                }
-            }
+            mapResultsToExam(examMap, exam);
             examRepository.save(exam);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+
+    private void mapResultsToExam(Map<String, Object> examMap, Exam exam) {
+        List<Map<String, Object>> resultsList = (List<Map<String, Object>>) examMap.get("results");
+        if (resultsList != null) {
+            for (Map<String, Object> result : resultsList) {
+                Result resultObject = new Result();
+                resultObject.setDimension(DimensionEnum.valueOf(result.get("dimension").toString().toUpperCase()));
+                resultObject.setResult((Integer) result.get("result"));
+                exam.addResult(resultObject);
+            }
+        }
+    }
+
+    private List<Long> getMissingSourceIds() {
+        List<Long> sourceIds = sourceRepository.findAllIds();
+        List<Long> examIds = examRepository.findAllSourceIds();
+        return sourceIds.stream()
+                .filter(sourceId -> !examIds.contains(sourceId))
+                .toList();
+    }
+
+
+    public List<Result> getAverages(long studentId) {
+        List<Object[]> results = examRepository.findAverageResultsOfLatestExamsByStudentId(studentId);
+        List<Result> resultList = new ArrayList<>();
+        for (Object[] result : results) {
+            DimensionEnum dimension = DimensionEnum.valueOf(result[0].toString().toUpperCase());
+            int resultInt = ((BigDecimal) result[1]).intValue();
+            resultList.add(new Result(dimension, resultInt));
+        }
+        return resultList;
+    }
 }
