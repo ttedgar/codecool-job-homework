@@ -8,7 +8,6 @@ import com.codecool.codecooljobhomework.target.entity.exam.Exam;
 import com.codecool.codecooljobhomework.target.entity.exam.Module;
 import com.codecool.codecooljobhomework.target.entity.exam.results.DimensionEnum;
 import com.codecool.codecooljobhomework.target.entity.exam.results.Result;
-import com.codecool.codecooljobhomework.target.entity.exam.results.ResultEnum;
 import com.codecool.codecooljobhomework.target.repository.CodeCoolerRepository;
 import com.codecool.codecooljobhomework.target.repository.ExamRepository;
 import jakarta.annotation.PostConstruct;
@@ -39,7 +38,7 @@ public class DataInit {
         initializeSource();
         initializeCodecoolers();
         initializeExam();
-//        initializeExam();
+        initializeExam();
     }
 
     private void initializeExam() {
@@ -50,13 +49,13 @@ public class DataInit {
         exam.setDate(LocalDateTime.now());
         exam.setModule(Module.OOP);
         exam.setComment("Not bad");
-        exam.setResults(List.of(new Result(DimensionEnum.CLEAN_CODE, ResultEnum.GOOD),
-                new Result(DimensionEnum.COMMUNICATION, ResultEnum.AVERAGE),
-                new Result(DimensionEnum.CODE_NAVIGATION, ResultEnum.UNACCEPTABLE),
-                new Result(DimensionEnum.GEEKNESS, ResultEnum.GOOD)
+        exam.setResults(List.of(new Result(DimensionEnum.CLEAN_CODE, 80),
+                new Result(DimensionEnum.COMMUNICATION, 70),
+                new Result(DimensionEnum.CODE_NAVIGATION, 100),
+                new Result(DimensionEnum.GEEKNESS, 120)
         ));
         exam.setSuccess(false);
-        exam.setLastAttemptInModule(true);
+        exam.setLatestAttemptInModule(true);
         examRepository.save(exam);
     }
 

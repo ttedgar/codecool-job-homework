@@ -2,8 +2,10 @@ package com.codecool.codecooljobhomework.target.service.exam;
 
 import com.codecool.codecooljobhomework.target.controller.exam.NewExamDto;
 import com.codecool.codecooljobhomework.target.entity.exam.Exam;
+import com.codecool.codecooljobhomework.target.entity.exam.Module;
 import com.codecool.codecooljobhomework.target.repository.CodeCoolerRepository;
 import com.codecool.codecooljobhomework.target.repository.ExamRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +22,14 @@ public class ExamService {
         this.codeCoolerRepository = codeCoolerRepository;
     }
 
+    @Transactional
     public void createExam(NewExamDto newExamDto) {
+        Exam exam = mapNewExamDtoToExam(newExamDto);
+        updateLatestAttemptInModule(newExamDto.module());
+        examRepository.save(exam);
+    }
+
+    private Exam mapNewExamDtoToExam(NewExamDto newExamDto) {
         Exam exam = new Exam();
         exam.setStudent(codeCoolerRepository.findByEmail(newExamDto.studentEmail()));
         exam.setMentor(codeCoolerRepository.findByEmail(newExamDto.mentorEmail()));
@@ -30,8 +39,12 @@ public class ExamService {
         exam.setComment(newExamDto.comment());
         exam.setResults(newExamDto.results());
         exam.setSuccess(newExamDto.success());
-        exam.setLastAttemptInModule(newExamDto.isLastAttemptInModule());
-        examRepository.save(exam);
+        return exam;
+    }
+
+    private void updateLatestAttemptInModule(Module module) {
+        List<Exam> exams = examRepository.findByModule(module);
+        exams.forEach(exam -> exam.setLatestAttemptInModule(false));
     }
 
     public List<Exam> getExams() {

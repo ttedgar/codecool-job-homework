@@ -13,10 +13,9 @@ public class Result {
     @Enumerated(EnumType.STRING)
     private DimensionEnum dimension;
 
-    @Enumerated(EnumType.STRING)
-    private ResultEnum result;
+    private int result;
 
-    public Result(DimensionEnum dimension, ResultEnum result) {
+    public Result(DimensionEnum dimension, int result) {
         this.dimension = dimension;
         this.result = result;
     }

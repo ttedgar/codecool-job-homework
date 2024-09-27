@@ -14,7 +14,6 @@ public record NewExamDto(
         LocalDateTime date,
         boolean cancelled,
         boolean success,
-        boolean isLastAttemptInModule,
         String comment,
         List<Result> results
 ) {}

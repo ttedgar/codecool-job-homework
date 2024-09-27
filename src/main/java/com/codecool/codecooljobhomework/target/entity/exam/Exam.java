@@ -32,7 +32,7 @@ public class Exam {
     private LocalDateTime date;
     private boolean cancelled;
     private boolean success;
-    private boolean isLastAttemptInModule;
+    private boolean isLatestAttemptInModule = true;
     private String comment;
 
     public Exam() {
@@ -44,7 +44,6 @@ public class Exam {
                 LocalDateTime date,
                 boolean cancelled,
                 boolean success,
-                boolean isLastAttemptInModule,
                 String comment,
                 ArrayList<Result> results) {
         this.mentor = mentor;
@@ -53,10 +52,7 @@ public class Exam {
         this.date = date;
         this.cancelled = cancelled;
         this.success = success;
-        this.isLastAttemptInModule = isLastAttemptInModule;
         this.comment = comment;
         this.results = results;
     }
-
-
 }
