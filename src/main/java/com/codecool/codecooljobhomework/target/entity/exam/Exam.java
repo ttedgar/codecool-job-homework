@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,9 +27,9 @@ public class Exam {
     private Module module;
 
     @ElementCollection
-    private List<Result> results;
+    private List<Result> results = new ArrayList<>();
 
-    private LocalDateTime date;
+    private LocalDate date;
     private boolean cancelled;
     private boolean success;
     private boolean isLatestAttemptInModule = true;
@@ -41,7 +41,7 @@ public class Exam {
     public Exam(Codecooler mentor,
                 Codecooler student,
                 Module module,
-                LocalDateTime date,
+                LocalDate date,
                 boolean cancelled,
                 boolean success,
                 String comment,
@@ -54,5 +54,9 @@ public class Exam {
         this.success = success;
         this.comment = comment;
         this.results = results;
+    }
+
+    public void addResult(Result result) {
+        results.add(result);
     }
 }

@@ -38,15 +38,14 @@ public class DataInit {
         initializeSource();
         initializeCodecoolers();
         initializeExam();
-        initializeExam();
     }
 
     private void initializeExam() {
         Exam exam = new Exam();
-        exam.setStudent(codeCoolerRepository.findByEmail("student@example.com"));
-        exam.setMentor(codeCoolerRepository.findByEmail("mentor@example.com"));
+        exam.setStudent(codeCoolerRepository.findByEmail("peter.szarka@codecool.com"));
+        exam.setMentor(codeCoolerRepository.findByEmail("foo@bar.com"));
         exam.setCancelled(false);
-        exam.setDate(LocalDateTime.now());
+        exam.setDate(LocalDate.now());
         exam.setModule(Module.OOP);
         exam.setComment("Not bad");
         exam.setResults(List.of(new Result(DimensionEnum.CLEAN_CODE, 80),
@@ -60,19 +59,25 @@ public class DataInit {
     }
 
     private void initializeCodecoolers() {
-        Codecooler mentor = new Codecooler();
-        mentor.setBirthday(LocalDate.now());
-        mentor.setUsername("mentor");
-        mentor.setEmail("mentor@example.com");
-        mentor.setPosition(Position.MENTOR);
+        Codecooler mentor1 = new Codecooler();
+        mentor1.setBirthday(LocalDate.now());
+        mentor1.setUsername("mentor");
+        mentor1.setEmail("peter.szarka@codecool.com");
+        mentor1.setPosition(Position.MENTOR);
+
+        Codecooler mentor2 = new Codecooler();
+        mentor2.setBirthday(LocalDate.now());
+        mentor2.setUsername("mentor");
+        mentor2.setEmail("mano.fabian@codecool.com");
+        mentor2.setPosition(Position.MENTOR);
 
         Codecooler student = new Codecooler();
         student.setBirthday(LocalDate.now());
         student.setUsername("student");
-        student.setEmail("student@example.com");
+        student.setEmail("foo@bar.com");
         student.setPosition(Position.STUDENT);
 
-        codeCoolerRepository.saveAll(List.of(mentor, student));
+        codeCoolerRepository.saveAll(List.of(mentor1, mentor2, student));
     }
 
     private void initializeSource() {

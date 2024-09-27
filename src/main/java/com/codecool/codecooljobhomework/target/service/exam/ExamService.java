@@ -1,25 +1,39 @@
 package com.codecool.codecooljobhomework.target.service.exam;
 
+import com.codecool.codecooljobhomework.source.entity.Source;
+import com.codecool.codecooljobhomework.source.repository.SourceRepository;
 import com.codecool.codecooljobhomework.target.controller.exam.NewExamDto;
 import com.codecool.codecooljobhomework.target.entity.exam.Exam;
 import com.codecool.codecooljobhomework.target.entity.exam.Module;
+import com.codecool.codecooljobhomework.target.entity.exam.results.DimensionEnum;
+import com.codecool.codecooljobhomework.target.entity.exam.results.Result;
 import com.codecool.codecooljobhomework.target.repository.CodeCoolerRepository;
 import com.codecool.codecooljobhomework.target.repository.ExamRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ExamService {
     private final ExamRepository examRepository;
     private final CodeCoolerRepository codeCoolerRepository;
+    private final SourceRepository sourceRepository;
+    private final ObjectMapper objectMapper;
 
     @Autowired
-    public ExamService(ExamRepository examRepository, CodeCoolerRepository codeCoolerRepository) {
+    public ExamService(ExamRepository examRepository,
+                       CodeCoolerRepository codeCoolerRepository,
+                       SourceRepository sourceRepository,
+                       ObjectMapper objectMapper) {
         this.examRepository = examRepository;
         this.codeCoolerRepository = codeCoolerRepository;
+        this.sourceRepository = sourceRepository;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional
@@ -27,6 +41,15 @@ public class ExamService {
         Exam exam = mapNewExamDtoToExam(newExamDto);
         updateLatestAttemptInModule(newExamDto.module());
         examRepository.save(exam);
+    }
+
+    public boolean synchronize() {
+        if (sourceRepository.count() == examRepository.count()) return false;
+        List<Source> rawData = sourceRepository.findAll();
+        for (Source source : rawData) {
+            mapJsonToExam(source);
+        }
+        return true;
     }
 
     private Exam mapNewExamDtoToExam(NewExamDto newExamDto) {
@@ -50,4 +73,45 @@ public class ExamService {
     public List<Exam> getExams() {
         return examRepository.findAll();
     }
+
+    private void mapJsonToExam(Source source) {
+        try {
+            Map<String, Object> examMap = objectMapper.readValue(source.getContent(), Map.class);
+            Exam exam = new Exam();
+            String module = (String) examMap.get("module");
+            if (module != null) exam.setModule(Module.valueOf(module.toUpperCase()));
+
+            String mentorEmail = (String) examMap.get("mentor");
+            if (mentorEmail != null) exam.setMentor(codeCoolerRepository.findByEmail(mentorEmail));
+
+            String studentEmail = (String) examMap.get("student");
+            if (studentEmail != null) exam.setStudent(codeCoolerRepository.findByEmail(studentEmail));
+
+            String date = (String) examMap.get("date");
+            if (date != null) exam.setDate(LocalDate.parse(date));
+
+            Boolean cancelled = (Boolean) examMap.get("cancelled");
+            if (cancelled != null) exam.setCancelled(cancelled);
+
+            Boolean success = (Boolean) examMap.get("success");
+            if (success != null) exam.setSuccess(success);
+
+            String comment = (String) examMap.get("comment");
+            if (comment != null) exam.setComment(comment);
+
+            List<Map<String, Object>> resultsList = (List<Map<String, Object>>) examMap.get("results");
+            if (resultsList != null) {
+                for (Map<String, Object> result : resultsList) {
+                    Result resultObject = new Result();
+                    resultObject.setDimension(DimensionEnum.valueOf(result.get("dimension").toString().toUpperCase()));
+                    resultObject.setResult((Integer) result.get("result"));
+                    exam.addResult(resultObject);
+                }
+            }
+            examRepository.save(exam);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }

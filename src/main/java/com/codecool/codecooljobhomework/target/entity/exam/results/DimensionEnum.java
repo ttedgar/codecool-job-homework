@@ -12,5 +12,8 @@ public enum DimensionEnum {
     TECHNICAL_LANGUAGE,
     OOP,
     JAVA,
-    GEEKNESS
+    GEEKNESS,
+    CODING,
+    HTML,
+
 }

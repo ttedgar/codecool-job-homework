@@ -31,4 +31,12 @@ public class ExamController {
         List<Exam> exams = examService.getExams();
         return ResponseEntity.ok().body(exams);
     }
+
+    @GetMapping("/sync")
+    public ResponseEntity<String> synchronize() {
+        boolean isNewData = examService.synchronize();
+        return isNewData ?
+                ResponseEntity.ok("New data added to target databse") :
+                ResponseEntity.ok("Source and target database were already in sync");
+    }
 }
