@@ -7,6 +7,8 @@ import com.codecool.codecooljobhomework.target.repository.ExamRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ExamService {
     private final ExamRepository examRepository;
@@ -32,4 +34,7 @@ public class ExamService {
         examRepository.save(exam);
     }
 
+    public List<Exam> getExams() {
+        return examRepository.findAll();
+    }
 }

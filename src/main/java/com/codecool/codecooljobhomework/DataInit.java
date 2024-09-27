@@ -6,8 +6,9 @@ import com.codecool.codecooljobhomework.target.entity.codecooler.Codecooler;
 import com.codecool.codecooljobhomework.target.entity.codecooler.Position;
 import com.codecool.codecooljobhomework.target.entity.exam.Exam;
 import com.codecool.codecooljobhomework.target.entity.exam.Module;
-import com.codecool.codecooljobhomework.target.entity.exam.results.Dimension;
+import com.codecool.codecooljobhomework.target.entity.exam.results.DimensionEnum;
 import com.codecool.codecooljobhomework.target.entity.exam.results.Result;
+import com.codecool.codecooljobhomework.target.entity.exam.results.ResultEnum;
 import com.codecool.codecooljobhomework.target.repository.CodeCoolerRepository;
 import com.codecool.codecooljobhomework.target.repository.ExamRepository;
 import jakarta.annotation.PostConstruct;
@@ -17,7 +18,6 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @Component
 public class DataInit {
@@ -39,22 +39,22 @@ public class DataInit {
         initializeSource();
         initializeCodecoolers();
         initializeExam();
+//        initializeExam();
     }
 
     private void initializeExam() {
         Exam exam = new Exam();
-        exam.setStudent(codeCoolerRepository.findByEmail("mentor@example.com"));
-        exam.setMentor(codeCoolerRepository.findByEmail("student@example.com"));
+        exam.setStudent(codeCoolerRepository.findByEmail("student@example.com"));
+        exam.setMentor(codeCoolerRepository.findByEmail("mentor@example.com"));
         exam.setCancelled(false);
         exam.setDate(LocalDateTime.now());
         exam.setModule(Module.OOP);
         exam.setComment("Not bad");
-        exam.setResults(Map.of(Dimension.CLEAN_CODE,
-                Result.GOOD,
-                Dimension.COMMUNICATION,
-                Result.AVERAGE,
-                Dimension.OOP,
-                Result.AWFUL));
+        exam.setResults(List.of(new Result(DimensionEnum.CLEAN_CODE, ResultEnum.GOOD),
+                new Result(DimensionEnum.COMMUNICATION, ResultEnum.AVERAGE),
+                new Result(DimensionEnum.CODE_NAVIGATION, ResultEnum.UNACCEPTABLE),
+                new Result(DimensionEnum.GEEKNESS, ResultEnum.GOOD)
+        ));
         exam.setSuccess(false);
         exam.setLastAttemptInModule(true);
         examRepository.save(exam);

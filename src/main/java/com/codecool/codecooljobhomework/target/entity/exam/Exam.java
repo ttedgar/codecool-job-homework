@@ -2,14 +2,13 @@ package com.codecool.codecooljobhomework.target.entity.exam;
 
 import com.codecool.codecooljobhomework.target.entity.exam.results.Result;
 import com.codecool.codecooljobhomework.target.entity.codecooler.Codecooler;
-import com.codecool.codecooljobhomework.target.entity.exam.results.Dimension;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Setter
@@ -19,23 +18,22 @@ public class Exam {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @OneToOne
+    @ManyToOne
     private Codecooler mentor;
-    @OneToOne
+    @ManyToOne
     private Codecooler student;
 
+    @Enumerated(EnumType.STRING)
     private Module module;
+
+    @ElementCollection
+    private List<Result> results;
+
     private LocalDateTime date;
     private boolean cancelled;
     private boolean success;
     private boolean isLastAttemptInModule;
     private String comment;
-
-    @ElementCollection
-    @CollectionTable(name = "exam_results", joinColumns = @JoinColumn(name = "exam_id"))
-    @MapKeyEnumerated(EnumType.STRING)
-    @Enumerated(EnumType.STRING)
-    private Map<Dimension, Result> results;
 
     public Exam() {
     }
@@ -48,7 +46,7 @@ public class Exam {
                 boolean success,
                 boolean isLastAttemptInModule,
                 String comment,
-                HashMap<Dimension, Result> results) {
+                ArrayList<Result> results) {
         this.mentor = mentor;
         this.student = student;
         this.module = module;

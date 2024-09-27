@@ -1,11 +1,10 @@
 package com.codecool.codecooljobhomework.target.controller.exam;
 
 import com.codecool.codecooljobhomework.target.entity.exam.Module;
-import com.codecool.codecooljobhomework.target.entity.exam.results.Dimension;
 import com.codecool.codecooljobhomework.target.entity.exam.results.Result;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public record NewExamDto(
@@ -17,5 +16,5 @@ public record NewExamDto(
         boolean success,
         boolean isLastAttemptInModule,
         String comment,
-        Map<Dimension, Result> results
+        List<Result> results
 ) {}

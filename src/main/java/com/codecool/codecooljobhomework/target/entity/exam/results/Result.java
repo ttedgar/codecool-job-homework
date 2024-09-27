@@ -1,17 +1,26 @@
 package com.codecool.codecooljobhomework.target.entity.exam.results;
 
-public enum Result {
-    OUTSTANDING(120),
-    PERFECT(100),
-    GOOD(80),
-    AVERAGE(60),
-    POOR(40),
-    AWFUL(20),
-    UNACCEPTABLE(10);
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import lombok.Getter;
+import lombok.Setter;
 
-    private int percentage;
+@Embeddable
+@Getter
+@Setter
+public class Result {
+    @Enumerated(EnumType.STRING)
+    private DimensionEnum dimension;
 
-    Result(int percentage) {
-        this.percentage = percentage;
+    @Enumerated(EnumType.STRING)
+    private ResultEnum result;
+
+    public Result(DimensionEnum dimension, ResultEnum result) {
+        this.dimension = dimension;
+        this.result = result;
+    }
+
+    public Result() {
     }
 }

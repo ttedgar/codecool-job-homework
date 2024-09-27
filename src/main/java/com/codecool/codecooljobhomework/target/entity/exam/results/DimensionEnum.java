@@ -1,6 +1,6 @@
 package com.codecool.codecooljobhomework.target.entity.exam.results;
 
-public enum Dimension {
+public enum DimensionEnum {
     CODE_NAVIGATION,
     PROGRAMMING_SKILLS,
     COMMUNICATION,
