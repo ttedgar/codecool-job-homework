@@ -2,6 +2,7 @@ package com.codecool.codecooljobhomework;
 
 import com.codecool.codecooljobhomework.source.entity.Source;
 import com.codecool.codecooljobhomework.source.repository.SourceRepository;
+import com.codecool.codecooljobhomework.target.controlleradvice.exception.CodecoolerNotFoundException;
 import com.codecool.codecooljobhomework.target.entity.codecooler.Codecooler;
 import com.codecool.codecooljobhomework.target.entity.codecooler.Position;
 import com.codecool.codecooljobhomework.target.entity.exam.Exam;
@@ -42,8 +43,12 @@ public class DataInit {
 
     private void initializeExam() {
         Exam exam = new Exam();
-        exam.setStudent(codeCoolerRepository.findByEmail("foo@bar.com"));
-        exam.setMentor(codeCoolerRepository.findByEmail("peter.szarka@codecool.com"));
+        exam.setStudent(codeCoolerRepository
+                .findByEmailAndPosition("foo@bar.com", Position.STUDENT)
+                .orElseThrow(() -> new CodecoolerNotFoundException("foo@bar.com is not a valid student email")));
+        exam.setMentor(codeCoolerRepository
+                .findByEmailAndPosition("peter.szarka@codecool.com", Position.MENTOR)
+                .orElseThrow(() -> new CodecoolerNotFoundException("foo@bar.com is not a valid student email")));
         exam.setCancelled(false);
         exam.setDate(LocalDate.now());
         exam.setModule(Module.OOP);

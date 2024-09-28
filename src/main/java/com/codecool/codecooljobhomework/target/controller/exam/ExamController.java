@@ -34,10 +34,10 @@ public class ExamController {
 
     @GetMapping("/sync")
     public ResponseEntity<String> synchronize() {
-        boolean isNewData = examService.synchronize();
-        return isNewData ?
-                ResponseEntity.ok("New data added to target database") :
-                ResponseEntity.ok("Source and target database were already in sync");
+        int numberOfNewExams = examService.synchronize();
+        return numberOfNewExams == 0 ?
+                ResponseEntity.ok("Source and target database were already in sync") :
+                ResponseEntity.ok("New exam added to target database. Number of new exams: " + numberOfNewExams);
     }
 
     @GetMapping("/averages/{studentId}")

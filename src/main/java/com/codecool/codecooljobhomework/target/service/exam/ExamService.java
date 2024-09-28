@@ -3,9 +3,7 @@ package com.codecool.codecooljobhomework.target.service.exam;
 import com.codecool.codecooljobhomework.source.entity.Source;
 import com.codecool.codecooljobhomework.source.repository.SourceRepository;
 import com.codecool.codecooljobhomework.target.controller.exam.NewExamDto;
-import com.codecool.codecooljobhomework.target.controlleradvice.exception.CodecoolerNotFoundException;
-import com.codecool.codecooljobhomework.target.controlleradvice.exception.CodecoolerPositionMismatchException;
-import com.codecool.codecooljobhomework.target.controlleradvice.exception.UnableToParseJsonToValidExamObject;
+import com.codecool.codecooljobhomework.target.controlleradvice.exception.*;
 import com.codecool.codecooljobhomework.target.entity.codecooler.Position;
 import com.codecool.codecooljobhomework.target.entity.exam.Exam;
 import com.codecool.codecooljobhomework.target.entity.exam.Module;
@@ -14,7 +12,6 @@ import com.codecool.codecooljobhomework.target.entity.exam.results.Result;
 import com.codecool.codecooljobhomework.target.repository.CodeCoolerRepository;
 import com.codecool.codecooljobhomework.target.repository.ExamRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -52,8 +50,12 @@ public class ExamService {
 
     private Exam mapNewExamDtoToExam(NewExamDto newExamDto) {
         Exam exam = new Exam();
-        exam.setStudent(codeCoolerRepository.findByEmail(newExamDto.studentEmail()));
-        exam.setMentor(codeCoolerRepository.findByEmail(newExamDto.mentorEmail()));
+        exam.setStudent(codeCoolerRepository
+                .findByEmailAndPosition(newExamDto.studentEmail(), Position.STUDENT)
+                .orElseThrow(() -> new CodecoolerNotFoundException(newExamDto.studentEmail() + " is not a valid student email")));
+        exam.setMentor(codeCoolerRepository
+                .findByEmailAndPosition(newExamDto.mentorEmail(), Position.MENTOR)
+                .orElseThrow(() -> new CodecoolerNotFoundException(newExamDto.mentorEmail() + " is not a valid mentor email")));
         exam.setCancelled(newExamDto.cancelled());
         exam.setDate(newExamDto.date());
         exam.setModule(newExamDto.module());
@@ -67,64 +69,115 @@ public class ExamService {
         return examRepository.findAll();
     }
 
-    public boolean synchronize() {
-        List<Long> missingSourceIds = getMissingSourceIds();
-        if (missingSourceIds.isEmpty()) return false;
-        List<Source> rawData = sourceRepository.findAllByIdIn(missingSourceIds);
+    public int synchronize() {
+        if (getMissingSourceIds().isEmpty()) return 0;
+        List<Source> rawData = sourceRepository.findAllByIdIn(getMissingSourceIds());
         for (Source source : rawData) {
-            mapJsonToExam(source);
+            convertJsonToExam(source);
         }
-        return true;
+        return rawData.size();
     }
 
-    private void mapJsonToExam(Source source) {
+    private void convertJsonToExam(Source source) {
+        Map<String, Object> examMap = parseJsonToMap(source.getContent());
+        Exam exam = new Exam();
+        exam.setSourceId(source.getId());
+        boolean cancelled = mapCancelled(examMap, exam, source.getId());
+        mapEmails(examMap, exam, source.getId());
+        mapModules(examMap, exam, source.getId());
+        mapDate(examMap, exam, source.getId());
+        mapSuccess(examMap, exam, source.getId(), cancelled);
+        mapComment(examMap, exam, source.getId(), cancelled);
+        mapResults(examMap, exam, source.getId(), cancelled);
+        examRepository.save(exam);
+    }
+
+    private Map<String, Object> parseJsonToMap(String json) {
         try {
-            Map<String, Object> examMap = objectMapper.readValue(source.getContent(), Map.class);
-            Exam exam = new Exam();
-            exam.setSourceId(source.getId());
-
-            String module = (String) examMap.get("module");
-            if (module != null) exam.setModule(Module.valueOf(module.toUpperCase()));
-
-            String mentorEmail = (String) examMap.get("mentor");
-            if (mentorEmail != null) exam.setMentor(codeCoolerRepository.findByEmail(mentorEmail));
-
-            String studentEmail = (String) examMap.get("student");
-            if (studentEmail != null) exam.setStudent(codeCoolerRepository.findByEmail(studentEmail));
-
-            String date = (String) examMap.get("date");
-            if (date != null) exam.setDate(LocalDate.parse(date));
-
-            Boolean cancelled = (Boolean) examMap.get("cancelled");
-            if (cancelled != null) exam.setCancelled(cancelled);
-
-            Boolean success = (Boolean) examMap.get("success");
-            if (success != null) exam.setSuccess(success);
-
-            String comment = (String) examMap.get("comment");
-            if (comment != null) exam.setComment(comment);
-
-            mapResultsToExam(examMap, exam);
-            examRepository.save(exam);
-        } catch (UnableToParseJsonToValidExamObject e) {
-            e.printStackTrace();
-        } catch (JsonMappingException e) {
-            throw new RuntimeException(e);
+            return objectMapper.readValue(json, Map.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new UnableToParseJsonToMapException("Parsing json to Map<String, Object> failed.");
         }
     }
 
+    private boolean mapCancelled(Map<String, Object> examMap, Exam exam, long sourceId) {
+        Boolean cancelled = (Boolean) examMap.get("cancelled");
+        if (cancelled != null) exam.setCancelled(cancelled);
+        else throw new MissingFieldException("Field \"cancelled\" is required to parse json. SourceId: " + sourceId);
+        return cancelled;
+    }
 
-    private void mapResultsToExam(Map<String, Object> examMap, Exam exam) {
+    private void mapEmails(Map<String, Object> examMap, Exam exam, long sourceId) {
+        String mentorEmail = (String) examMap.get("mentor");
+        if (mentorEmail != null) {
+            exam.setMentor(codeCoolerRepository
+                    .findByEmailAndPosition(mentorEmail, Position.MENTOR)
+                    .orElseThrow(() -> new CodecoolerNotFoundException(mentorEmail + " is not a valid student email. SourceId: " + sourceId)));
+        } else {
+            throw new MissingFieldException("Field \"mentor\" email is required to parse json. SourceId: " + sourceId);
+        }
+
+        String studentEmail = (String) examMap.get("student");
+        if (studentEmail != null) {
+            exam.setStudent(codeCoolerRepository
+                    .findByEmailAndPosition(studentEmail, Position.STUDENT)
+                    .orElseThrow(() -> new CodecoolerNotFoundException(studentEmail + " is not a valid student email. SourceId: " + sourceId)));
+        } else {
+            throw new MissingFieldException("Field \"student\" is required to parse json. SourceId: " + sourceId);
+        }
+    }
+
+    private void mapModules(Map<String, Object> examMap, Exam exam, long sourceId) {
+        String module = (String) examMap.get("module");
+        if (module != null) exam.setModule(Module.valueOf(module.toUpperCase()));
+        else throw new MissingFieldException("Field \"module\" is required to parse json. SourceId: " + sourceId);
+    }
+
+    private void mapDate(Map<String, Object> examMap, Exam exam, long sourceId) {
+        String date = (String) examMap.get("date");
+        if (date != null) {
+            try {
+                exam.setDate(LocalDate.parse(date));
+            } catch (DateTimeParseException e) {
+                throw new InvalidDateFormatException("Invalid date format for date: " + date + ". SourceId: " + sourceId);
+            }
+        }
+        else {
+            throw new MissingFieldException("Field \"date\" is required to parse json. SourceId: " + sourceId);
+        }
+    }
+
+    private void mapSuccess(Map<String, Object> examMap, Exam exam, long sourceId, boolean cancelled) {
+        Boolean success = (Boolean) examMap.get("success");
+        if (success != null) exam.setSuccess(success);
+        else if (!cancelled) throw new MissingFieldException("Field \"success\" is required to parse json. SourceId: " + sourceId);
+    }
+
+    private void mapComment(Map<String, Object> examMap, Exam exam, long sourceId, boolean cancelled) {
+        String comment = (String) examMap.get("comment");
+        if (comment != null) exam.setComment(comment);
+        else if (!cancelled) throw new MissingFieldException("Field \"comment\" is required to parse json. SourceId: " + sourceId);
+    }
+
+    private void mapResults(Map<String, Object> examMap, Exam exam, long sourceId, boolean cancelled) {
         List<Map<String, Object>> resultsList = (List<Map<String, Object>>) examMap.get("results");
         if (resultsList != null) {
             for (Map<String, Object> result : resultsList) {
                 Result resultObject = new Result();
-                resultObject.setDimension(DimensionEnum.valueOf(result.get("dimension").toString().toUpperCase()));
-                resultObject.setResult((Integer) result.get("result"));
+                try {
+                    resultObject.setDimension(DimensionEnum.valueOf(result.get("dimension").toString().toUpperCase()));
+                } catch (IllegalArgumentException e) {
+                    throw new InvalidDimensionException(result.get("dimension").toString() + " is an invalid dimension. SourceId: " + sourceId);
+                }
+                if (((Integer) result.get("result")) >= 0 && ((Integer) result.get("result")) <= 120) {
+                    resultObject.setResult((Integer) result.get("result"));
+                } else {
+                    throw new InvalidResultException("Result should be a number between 0 and 120. SourceId: " + sourceId);
+                }
                 exam.addResult(resultObject);
             }
+        } else if (!cancelled) {
+            throw new MissingFieldException("Field \"comment\" is required to parse json. SourceId: " + sourceId);
         }
     }
 
@@ -137,10 +190,8 @@ public class ExamService {
     }
 
     public List<Result> getAverages(long studentId) {
-        codeCoolerRepository.findById(studentId)
-                .orElseThrow(() -> new CodecoolerNotFoundException("There is no codecooler with this Id"));
         codeCoolerRepository.findByIdAndPosition(studentId, Position.STUDENT)
-                .orElseThrow(() -> new CodecoolerPositionMismatchException("Codecooler with this Id is a mentor, and has no exam results"));
+                .orElseThrow(() -> new CodecoolerNotFoundException("There is no student with this Id"));
 
         List<Object[]> results = examRepository.findAverageResultsOfLatestExamsByStudentId(studentId);
         List<Result> resultList = new ArrayList<>();

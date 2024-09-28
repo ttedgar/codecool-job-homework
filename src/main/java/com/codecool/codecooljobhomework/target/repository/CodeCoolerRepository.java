@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface CodeCoolerRepository extends JpaRepository<Codecooler, Long> {
-    Codecooler findByEmail(String email);
+    Optional<Codecooler> findByEmailAndPosition(String email, Position position);
 
     Optional<Codecooler> findByIdAndPosition(long studentId, Position position);
 }
