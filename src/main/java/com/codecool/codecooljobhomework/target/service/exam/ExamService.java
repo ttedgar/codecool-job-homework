@@ -26,6 +26,9 @@ import java.util.Map;
 
 @Service
 public class ExamService {
+    private static final int MAX_EXAM_PERCENTAGE = 120;
+    private static final int MIN_SUCCESSFUL_EXAM_PERCENTAGE = 60;
+
     private final ExamRepository examRepository;
     private final CodeCoolerRepository codeCoolerRepository;
     private final SourceRepository sourceRepository;
@@ -69,115 +72,148 @@ public class ExamService {
         return examRepository.findAll();
     }
 
-    public int synchronize() {
-        if (getMissingSourceIds().isEmpty()) return 0;
+    public DataTransferReport synchronize() {
+        DataTransferReport dataTransferReport = new DataTransferReport();
+        if (getMissingSourceIds().isEmpty()) {
+            dataTransferReport.setNumberOfSuccessfulTransfers(0);
+            return dataTransferReport;
+        }
         List<Source> rawData = sourceRepository.findAllByIdIn(getMissingSourceIds());
         for (Source source : rawData) {
-            convertJsonToExam(source);
+            try {
+                convertJsonToExam(source);
+                dataTransferReport.incrementSuccessfulTransfers();
+            } catch (SynchronizationException e) {
+                dataTransferReport.addExceptionMessage(e.getMessage());
+                dataTransferReport.incrementFailedTransfers();
+            }
         }
-        return rawData.size();
+        return dataTransferReport;
     }
 
     private void convertJsonToExam(Source source) {
-        Map<String, Object> examMap = parseJsonToMap(source.getContent());
+        Map<String, Object> examMap = parseJsonToMap(source.getContent(), source.getId());
         Exam exam = new Exam();
-        exam.setSourceId(source.getId());
-        boolean cancelled = mapCancelled(examMap, exam, source.getId());
-        mapEmails(examMap, exam, source.getId());
-        mapModules(examMap, exam, source.getId());
-        mapDate(examMap, exam, source.getId());
-        mapSuccess(examMap, exam, source.getId(), cancelled);
-        mapComment(examMap, exam, source.getId(), cancelled);
-        mapResults(examMap, exam, source.getId(), cancelled);
+        try {
+            exam.setSourceId(source.getId());
+            boolean cancelled = mapCancelled(examMap, exam, source.getId());
+            mapEmails(examMap, exam, source.getId());
+            mapModules(examMap, exam, source.getId());
+            mapDate(examMap, exam, source.getId());
+            mapComment(examMap, exam, source.getId());
+            if (!cancelled) {
+                Boolean success = mapSuccess(examMap, exam, source.getId());
+                mapResults(examMap, exam, source.getId(), success);
+            }
+        } catch (NullPointerException e) {
+            throw new InvalidJsonFieldNameException("Invalid field name. SourceId: " + source.getId());
+        }
         examRepository.save(exam);
     }
 
-    private Map<String, Object> parseJsonToMap(String json) {
+    private Map<String, Object> parseJsonToMap(String json, long sourceId) {
         try {
             return objectMapper.readValue(json, Map.class);
         } catch (JsonProcessingException e) {
-            throw new UnableToParseJsonToMapException("Parsing json to Map<String, Object> failed.");
+            throw new UnableToParseJsonToMapException("Parsing json to Map<String, Object> failed. SourceId: " + sourceId);
         }
     }
 
     private boolean mapCancelled(Map<String, Object> examMap, Exam exam, long sourceId) {
         Boolean cancelled = (Boolean) examMap.get("cancelled");
-        if (cancelled != null) exam.setCancelled(cancelled);
-        else throw new MissingFieldException("Field \"cancelled\" is required to parse json. SourceId: " + sourceId);
+        if (cancelled == null) throw new MissingFieldException("Field \"cancelled\" is required to parse json. SourceId: " + sourceId);
+        exam.setCancelled(cancelled);
         return cancelled;
     }
 
     private void mapEmails(Map<String, Object> examMap, Exam exam, long sourceId) {
         String mentorEmail = (String) examMap.get("mentor");
-        if (mentorEmail != null) {
-            exam.setMentor(codeCoolerRepository
-                    .findByEmailAndPosition(mentorEmail, Position.MENTOR)
-                    .orElseThrow(() -> new CodecoolerNotFoundException(mentorEmail + " is not a valid student email. SourceId: " + sourceId)));
-        } else {
-            throw new MissingFieldException("Field \"mentor\" email is required to parse json. SourceId: " + sourceId);
-        }
-
+        if (mentorEmail == null) throw new MissingFieldException("Field \"mentor\" email is required to parse json. SourceId: " + sourceId);
         String studentEmail = (String) examMap.get("student");
-        if (studentEmail != null) {
-            exam.setStudent(codeCoolerRepository
-                    .findByEmailAndPosition(studentEmail, Position.STUDENT)
-                    .orElseThrow(() -> new CodecoolerNotFoundException(studentEmail + " is not a valid student email. SourceId: " + sourceId)));
-        } else {
-            throw new MissingFieldException("Field \"student\" is required to parse json. SourceId: " + sourceId);
-        }
+        if (studentEmail == null) throw new MissingFieldException("Field \"student\" is required to parse json. SourceId: " + sourceId);
+
+        exam.setMentor(codeCoolerRepository
+                .findByEmailAndPosition(mentorEmail, Position.MENTOR)
+                .orElseThrow(() -> new InvalidEmailException(mentorEmail + " is not a valid student email. SourceId: " + sourceId)));
+        exam.setStudent(codeCoolerRepository
+                .findByEmailAndPosition(studentEmail, Position.STUDENT)
+                .orElseThrow(() -> new InvalidEmailException(studentEmail + " is not a valid student email. SourceId: " + sourceId)));
     }
 
     private void mapModules(Map<String, Object> examMap, Exam exam, long sourceId) {
         String module = (String) examMap.get("module");
-        if (module != null) exam.setModule(Module.valueOf(module.toUpperCase()));
-        else throw new MissingFieldException("Field \"module\" is required to parse json. SourceId: " + sourceId);
+        if (module == null) throw new MissingFieldException("Field \"module\" is required to parse json. SourceId: " + sourceId);
+        try {
+            exam.setModule(Module.valueOf(module.toUpperCase()));
+        } catch (IllegalArgumentException e) {
+            throw new InvalidModuleException(module + " is not a module. SourceId: " + sourceId);
+        }
     }
 
     private void mapDate(Map<String, Object> examMap, Exam exam, long sourceId) {
         String date = (String) examMap.get("date");
-        if (date != null) {
-            try {
-                exam.setDate(LocalDate.parse(date));
-            } catch (DateTimeParseException e) {
-                throw new InvalidDateFormatException("Invalid date format for date: " + date + ". SourceId: " + sourceId);
-            }
-        }
-        else {
-            throw new MissingFieldException("Field \"date\" is required to parse json. SourceId: " + sourceId);
+        if (date == null) throw new MissingFieldException("Field \"date\" is required to parse json. SourceId: " + sourceId);
+        try {
+            exam.setDate(LocalDate.parse(date));
+        } catch (DateTimeParseException e) {
+            throw new InvalidDateFormatException("Invalid date format for date: " + date + ". SourceId: " + sourceId);
         }
     }
 
-    private void mapSuccess(Map<String, Object> examMap, Exam exam, long sourceId, boolean cancelled) {
+    private boolean mapSuccess(Map<String, Object> examMap, Exam exam, long sourceId) {
         Boolean success = (Boolean) examMap.get("success");
         if (success != null) exam.setSuccess(success);
-        else if (!cancelled) throw new MissingFieldException("Field \"success\" is required to parse json. SourceId: " + sourceId);
+        else throw new MissingFieldException("Field \"success\" is required to parse json. SourceId: " + sourceId);
+        return success;
     }
 
-    private void mapComment(Map<String, Object> examMap, Exam exam, long sourceId, boolean cancelled) {
+    private void mapComment(Map<String, Object> examMap, Exam exam, long sourceId) {
         String comment = (String) examMap.get("comment");
         if (comment != null) exam.setComment(comment);
-        else if (!cancelled) throw new MissingFieldException("Field \"comment\" is required to parse json. SourceId: " + sourceId);
+        else throw new MissingFieldException("Field \"comment\" is required to parse json. SourceId: " + sourceId);
     }
 
-    private void mapResults(Map<String, Object> examMap, Exam exam, long sourceId, boolean cancelled) {
-        List<Map<String, Object>> resultsList = (List<Map<String, Object>>) examMap.get("results");
-        if (resultsList != null) {
-            for (Map<String, Object> result : resultsList) {
-                Result resultObject = new Result();
-                try {
-                    resultObject.setDimension(DimensionEnum.valueOf(result.get("dimension").toString().toUpperCase()));
-                } catch (IllegalArgumentException e) {
-                    throw new InvalidDimensionException(result.get("dimension").toString() + " is an invalid dimension. SourceId: " + sourceId);
-                }
-                if (((Integer) result.get("result")) >= 0 && ((Integer) result.get("result")) <= 120) {
-                    resultObject.setResult((Integer) result.get("result"));
-                } else {
-                    throw new InvalidResultException("Result should be a number between 0 and 120. SourceId: " + sourceId);
-                }
-                exam.addResult(resultObject);
+    private int mapResult(Result resultObject, Map<String, Object> result, Integer lowestResult, long sourceId) {
+        try {
+            resultObject.setDimension(DimensionEnum.valueOf(result.get("dimension").toString().toUpperCase()));
+        } catch (IllegalArgumentException e) {
+            throw new InvalidDimensionException(result.get("dimension").toString() + " is an invalid dimension. SourceId: " + sourceId);
+        }
+        try {
+            Integer resultInt = (Integer) result.get("result");
+            if (resultInt >= 0 && resultInt <= MAX_EXAM_PERCENTAGE) {
+                if (resultInt < lowestResult) lowestResult = resultInt;
+                resultObject.setResult((Integer) result.get("result"));
+            } else {
+                throw new InvalidResultException("Result should be a number between 0 and 120. SourceId: " + sourceId);
             }
-        } else if (!cancelled) {
+        } catch (ClassCastException e) {
+            throw new InvalidResultException("Result should be a number between 0 and 120. SourceId: " + sourceId);
+        }
+        return lowestResult;
+    }
+
+    private void mapResults(Map<String, Object> examMap, Exam exam, long sourceId, Boolean success) {
+        int lowestResult = MAX_EXAM_PERCENTAGE;
+        List<Map<String, Object>> resultsList = (List<Map<String, Object>>) examMap.get("results");
+
+        if (resultsList == null) {
             throw new MissingFieldException("Field \"comment\" is required to parse json. SourceId: " + sourceId);
+        }
+
+        for (Map<String, Object> result : resultsList) {
+            Result resultObject = new Result();
+            lowestResult = mapResult(resultObject, result, lowestResult, sourceId);
+            validateSuccessAndResult(success, lowestResult, sourceId);
+            exam.addResult(resultObject);
+        }
+    }
+
+    private void validateSuccessAndResult(Boolean success, int lowestResult, long sourceId) {
+        if (success && lowestResult < MIN_SUCCESSFUL_EXAM_PERCENTAGE) {
+            throw new AmbivalentResultAndSuccessDataException("Exam with result lower then 60% can not be successful. SourceId: " + sourceId);
+        } else if (!success && lowestResult > MIN_SUCCESSFUL_EXAM_PERCENTAGE) {
+            throw new AmbivalentResultAndSuccessDataException("Exam with all results above 60% can not be unsuccessful. SourceId: " + sourceId);
         }
     }
 
@@ -191,7 +227,7 @@ public class ExamService {
 
     public List<Result> getAverages(long studentId) {
         codeCoolerRepository.findByIdAndPosition(studentId, Position.STUDENT)
-                .orElseThrow(() -> new CodecoolerNotFoundException("There is no student with this Id"));
+                .orElseThrow(() -> new InvalidEmailException("There is no student with this Id"));
 
         List<Object[]> results = examRepository.findAverageResultsOfLatestExamsByStudentId(studentId);
         List<Result> resultList = new ArrayList<>();

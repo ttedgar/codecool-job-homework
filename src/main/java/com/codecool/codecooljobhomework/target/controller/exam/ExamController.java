@@ -2,6 +2,7 @@ package com.codecool.codecooljobhomework.target.controller.exam;
 
 import com.codecool.codecooljobhomework.target.entity.exam.Exam;
 import com.codecool.codecooljobhomework.target.entity.exam.results.Result;
+import com.codecool.codecooljobhomework.target.service.exam.DataTransferReport;
 import com.codecool.codecooljobhomework.target.service.exam.ExamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -33,11 +34,12 @@ public class ExamController {
     }
 
     @GetMapping("/sync")
-    public ResponseEntity<String> synchronize() {
-        int numberOfNewExams = examService.synchronize();
-        return numberOfNewExams == 0 ?
-                ResponseEntity.ok("Source and target database were already in sync") :
-                ResponseEntity.ok("New exam added to target database. Number of new exams: " + numberOfNewExams);
+    public ResponseEntity<DataTransferReport> synchronize() {
+        return ResponseEntity.ok().body(examService.synchronize());
+//        int numberOfNewExams = examService.synchronize();
+//        return numberOfNewExams == 0 ?
+//                ResponseEntity.ok("Source and target database were already in sync") :
+//                ResponseEntity.ok("New exam added to target database. Number of new exams: " + numberOfNewExams);
     }
 
     @GetMapping("/averages/{studentId}")
