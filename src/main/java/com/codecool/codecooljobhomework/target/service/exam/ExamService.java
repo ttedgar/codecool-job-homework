@@ -3,16 +3,21 @@ package com.codecool.codecooljobhomework.target.service.exam;
 import com.codecool.codecooljobhomework.source.entity.Source;
 import com.codecool.codecooljobhomework.source.repository.SourceRepository;
 import com.codecool.codecooljobhomework.target.controller.exam.NewExamDto;
+import com.codecool.codecooljobhomework.target.controlleradvice.exception.CodecoolerNotFoundException;
+import com.codecool.codecooljobhomework.target.controlleradvice.exception.CodecoolerPositionMismatchException;
+import com.codecool.codecooljobhomework.target.controlleradvice.exception.UnableToParseJsonToValidExamObject;
+import com.codecool.codecooljobhomework.target.entity.codecooler.Position;
 import com.codecool.codecooljobhomework.target.entity.exam.Exam;
 import com.codecool.codecooljobhomework.target.entity.exam.Module;
 import com.codecool.codecooljobhomework.target.entity.exam.results.DimensionEnum;
 import com.codecool.codecooljobhomework.target.entity.exam.results.Result;
 import com.codecool.codecooljobhomework.target.repository.CodeCoolerRepository;
 import com.codecool.codecooljobhomework.target.repository.ExamRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -45,16 +50,6 @@ public class ExamService {
         examRepository.save(exam);
     }
 
-    public boolean synchronize() {
-        List<Long> missingSourceIds = getMissingSourceIds();
-        if (missingSourceIds.isEmpty()) return false;
-        List<Source> rawData = sourceRepository.findAllByIdIn(missingSourceIds);
-        for (Source source : rawData) {
-            mapJsonToExam(source);
-        }
-        return true;
-    }
-
     private Exam mapNewExamDtoToExam(NewExamDto newExamDto) {
         Exam exam = new Exam();
         exam.setStudent(codeCoolerRepository.findByEmail(newExamDto.studentEmail()));
@@ -70,6 +65,16 @@ public class ExamService {
 
     public List<Exam> getExams() {
         return examRepository.findAll();
+    }
+
+    public boolean synchronize() {
+        List<Long> missingSourceIds = getMissingSourceIds();
+        if (missingSourceIds.isEmpty()) return false;
+        List<Source> rawData = sourceRepository.findAllByIdIn(missingSourceIds);
+        for (Source source : rawData) {
+            mapJsonToExam(source);
+        }
+        return true;
     }
 
     private void mapJsonToExam(Source source) {
@@ -101,8 +106,12 @@ public class ExamService {
 
             mapResultsToExam(examMap, exam);
             examRepository.save(exam);
-        } catch (Exception e) {
+        } catch (UnableToParseJsonToValidExamObject e) {
             e.printStackTrace();
+        } catch (JsonMappingException e) {
+            throw new RuntimeException(e);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -127,8 +136,12 @@ public class ExamService {
                 .toList();
     }
 
-
     public List<Result> getAverages(long studentId) {
+        codeCoolerRepository.findById(studentId)
+                .orElseThrow(() -> new CodecoolerNotFoundException("There is no codecooler with this Id"));
+        codeCoolerRepository.findByIdAndPosition(studentId, Position.STUDENT)
+                .orElseThrow(() -> new CodecoolerPositionMismatchException("Codecooler with this Id is a mentor, and has no exam results"));
+
         List<Object[]> results = examRepository.findAverageResultsOfLatestExamsByStudentId(studentId);
         List<Result> resultList = new ArrayList<>();
         for (Object[] result : results) {
