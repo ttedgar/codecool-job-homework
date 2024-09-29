@@ -60,6 +60,7 @@ public class DataInit {
         ));
         exam.setSuccess(false);
         exam.setSourceId(200);
+        exam.setAttemptCount(1);
         examRepository.save(exam);
     }
 

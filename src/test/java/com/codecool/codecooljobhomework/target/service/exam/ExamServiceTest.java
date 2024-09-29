@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 class ExamServiceTest {
@@ -45,20 +44,18 @@ class ExamServiceTest {
 
     @Test
     void testSynchronizeWithNoNewSource() {
-        //Arrange
         when(sourceRepository.findAllIds()).thenReturn(List.of(1L, 2L, 3L));
         when(examRepository.findAllSourceIds()).thenReturn(List.of(1L, 2L, 3L));
         DataTransferReport expectedReport = new DataTransferReport();
-        //Act
+
         DataTransferReport actualReport = examService.synchronize();
-        //Assert
+
         assertEquals(expectedReport, actualReport);
     }
 
 
     @Test
     void testSynchronizeWithOneNewSource() throws JsonProcessingException {
-        //Arrange
         when(sourceRepository.findAllIds()).thenReturn(List.of(1L, 2L, 3L));
         when(examRepository.findAllSourceIds()).thenReturn(List.of(1L, 2L));
         Source source = new Source();
@@ -87,15 +84,14 @@ class ExamServiceTest {
                 .thenReturn(Optional.of(new Codecooler()));
         DataTransferReport expectedReport = new DataTransferReport();
         expectedReport.incrementSuccessfulTransfers();
-        //Act
+
         DataTransferReport actualReport = examService.synchronize();
-        //Assert
+
         assertEquals(expectedReport, actualReport);
     }
 
     @Test
     void testSynchronizeWithOneNewSourceWithInvalidMentorEmail() throws JsonProcessingException {
-        //Arrange
         when(sourceRepository.findAllIds()).thenReturn(List.of(1L, 2L, 3L));
         when(examRepository.findAllSourceIds()).thenReturn(List.of(1L, 2L));
         Source source = new Source();
@@ -125,9 +121,9 @@ class ExamServiceTest {
         DataTransferReport expectedReport = new DataTransferReport();
         expectedReport.incrementFailedTransfers();
         expectedReport.addExceptionMessage("peter.szarka@codecool.com is not a valid mentor email. SourceId: 3");
-        //Act
+
         DataTransferReport actualReport = examService.synchronize();
-        //Assert
+
         assertEquals(expectedReport, actualReport);
     }
 
