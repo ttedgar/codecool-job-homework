@@ -34,6 +34,7 @@ public class Exam {
     private boolean success;
     private String comment;
     private long sourceId;
+    private int attemptCount;
 
     public Exam() {
     }

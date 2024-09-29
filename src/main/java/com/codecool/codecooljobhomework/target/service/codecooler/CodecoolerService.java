@@ -12,9 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class CodecoolerService {
@@ -55,13 +53,10 @@ public class CodecoolerService {
     }
 
     public Map getMentorStats(long mentorId) {
-        codeCoolerRepository.findByIdAndPosition(mentorId, Position.MENTOR)
-                .orElseThrow(() -> new CodecoolerNotFoundException("There is no mentor with this Id. mentorId: " + mentorId));
-        double firstRatio = examRepository.getPassRatioOnFirstExams(mentorId).orElse(-1.0);
-        double lastRatio = examRepository.getPassRatioOnLastExams(mentorId).orElse(-1.0);
-        return Map.of(
-                "Ratio of successful first exams: ", firstRatio,
-                "Ratio of successful last exams: ", lastRatio
-        );
+        Map mentorStats = new LinkedHashMap();
+        for (int i = 1; i < examRepository.findHighestAttemptCount(); i++) {
+            mentorStats.put("Attempt " + i, examRepository.findPassRatio(mentorId, i));
+        }
+        return mentorStats;
     }
 }

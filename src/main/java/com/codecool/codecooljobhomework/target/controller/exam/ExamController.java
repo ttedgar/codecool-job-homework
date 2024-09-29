@@ -46,5 +46,4 @@ public class ExamController {
     public ResponseEntity<List<Result>> getAverages(@PathVariable long studentId) {
         return ResponseEntity.ok().body(examService.getAverages(studentId));
     }
-
 }

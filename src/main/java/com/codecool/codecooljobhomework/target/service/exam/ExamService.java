@@ -4,6 +4,7 @@ import com.codecool.codecooljobhomework.source.entity.Source;
 import com.codecool.codecooljobhomework.source.repository.SourceRepository;
 import com.codecool.codecooljobhomework.target.controller.exam.NewExamDto;
 import com.codecool.codecooljobhomework.target.controlleradvice.exception.*;
+import com.codecool.codecooljobhomework.target.entity.codecooler.Codecooler;
 import com.codecool.codecooljobhomework.target.entity.codecooler.Position;
 import com.codecool.codecooljobhomework.target.entity.exam.Exam;
 import com.codecool.codecooljobhomework.target.entity.exam.Module;
@@ -53,9 +54,10 @@ public class ExamService {
 
     private Exam mapNewExamDtoToExam(NewExamDto newExamDto) {
         Exam exam = new Exam();
-        exam.setStudent(codeCoolerRepository
+        Codecooler student = codeCoolerRepository
                 .findByEmailAndPosition(newExamDto.studentEmail(), Position.STUDENT)
-                .orElseThrow(() -> new CodecoolerNotFoundException(newExamDto.studentEmail() + " is not a valid student email")));
+                .orElseThrow(() -> new CodecoolerNotFoundException(newExamDto.studentEmail() + " is not a valid student email"));
+        exam.setStudent(student);
         exam.setMentor(codeCoolerRepository
                 .findByEmailAndPosition(newExamDto.mentorEmail(), Position.MENTOR)
                 .orElseThrow(() -> new CodecoolerNotFoundException(newExamDto.mentorEmail() + " is not a valid mentor email")));
@@ -65,6 +67,7 @@ public class ExamService {
         exam.setComment(newExamDto.comment());
         exam.setResults(newExamDto.results());
         exam.setSuccess(newExamDto.success());
+        exam.setAttemptCount(findAttemptCount(student.getId(), newExamDto.module().toString()));
         return exam;
     }
 
@@ -97,14 +100,16 @@ public class ExamService {
         try {
             exam.setSourceId(source.getId());
             boolean cancelled = mapCancelled(examMap, exam, source.getId());
-            mapEmails(examMap, exam, source.getId());
-            mapModules(examMap, exam, source.getId());
+            long studentId = mapStudentEmail(examMap, exam, source.getId());
+            mapMentorEmail(examMap, exam, source.getId());
+            String moduleStr = mapModules(examMap, exam, source.getId());
             mapDate(examMap, exam, source.getId());
             mapComment(examMap, exam, source.getId());
             if (!cancelled) {
                 Boolean success = mapSuccess(examMap, exam, source.getId());
                 mapResults(examMap, exam, source.getId(), success);
             }
+            exam.setAttemptCount(findAttemptCount(studentId, moduleStr));
         } catch (NullPointerException e) {
             throw new InvalidJsonFieldNameException("Invalid field name. SourceId: " + source.getId());
         }
@@ -126,25 +131,34 @@ public class ExamService {
         return cancelled;
     }
 
-    private void mapEmails(Map<String, Object> examMap, Exam exam, long sourceId) {
-        String mentorEmail = (String) examMap.get("mentor");
-        if (mentorEmail == null) throw new MissingFieldException("Field \"mentor\" email is required to parse json. SourceId: " + sourceId);
+    private long mapStudentEmail(Map<String, Object> examMap, Exam exam, long sourceId) {
         String studentEmail = (String) examMap.get("student");
         if (studentEmail == null) throw new MissingFieldException("Field \"student\" is required to parse json. SourceId: " + sourceId);
+
+        Codecooler student = codeCoolerRepository
+                .findByEmailAndPosition(studentEmail, Position.STUDENT)
+                .orElseThrow(() -> new InvalidEmailException(studentEmail + " is not a valid student email. SourceId: " + sourceId));
+        exam.setStudent(student);
+        return student.getId();
+    }
+
+    private String mapMentorEmail(Map<String, Object> examMap, Exam exam, long sourceId) {
+        String mentorEmail = (String) examMap.get("mentor");
+        if (mentorEmail == null) throw new MissingFieldException("Field \"mentor\" email is required to parse json. SourceId: " + sourceId);
 
         exam.setMentor(codeCoolerRepository
                 .findByEmailAndPosition(mentorEmail, Position.MENTOR)
                 .orElseThrow(() -> new InvalidEmailException(mentorEmail + " is not a valid mentor email. SourceId: " + sourceId)));
-        exam.setStudent(codeCoolerRepository
-                .findByEmailAndPosition(studentEmail, Position.STUDENT)
-                .orElseThrow(() -> new InvalidEmailException(studentEmail + " is not a valid student email. SourceId: " + sourceId)));
+        return mentorEmail;
     }
 
-    private void mapModules(Map<String, Object> examMap, Exam exam, long sourceId) {
+
+    private String mapModules(Map<String, Object> examMap, Exam exam, long sourceId) {
         String module = (String) examMap.get("module");
         if (module == null) throw new MissingFieldException("Field \"module\" is required to parse json. SourceId: " + sourceId);
         try {
             exam.setModule(Module.valueOf(module.toUpperCase()));
+            return module;
         } catch (IllegalArgumentException e) {
             throw new InvalidModuleException(module + " is not a module. SourceId: " + sourceId);
         }
@@ -237,5 +251,9 @@ public class ExamService {
             resultList.add(new Result(dimension, resultInt));
         }
         return resultList;
+    }
+
+    public int findAttemptCount(long studentId, String moduleStr) {
+        return examRepository.findNumberOfAttempts(studentId, moduleStr.toUpperCase()) + 1;
     }
 }

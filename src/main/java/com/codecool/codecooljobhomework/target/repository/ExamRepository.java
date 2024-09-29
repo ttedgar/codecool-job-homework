@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface ExamRepository extends JpaRepository<Exam, Long> {
@@ -42,86 +41,37 @@ public interface ExamRepository extends JpaRepository<Exam, Long> {
     List<Object[]> findAverageResultsOfLatestExamsByStudentId(@Param("studentId") long studentId);
 
     @Query(value = """
-                with passCount as (
-                	select count(*) as passes
-                	from exam e
-                	join codecooler c
-                	on e.mentor_id = c.id
-                	join codecooler c2
-                	on e.student_id = c2.id
-                	where e."date" = (
-                		select min(e2.date)
-                		from exam e2
-                		where e."module" = e2."module"
-                		and e.student_id = e2.student_id
-                	)
-                	and e.mentor_id = :mentorId
-                	and e.success
-                ),
-                failCount as (
-                	select count(*) as fails
-                	from exam e
-                	join codecooler c
-                	on e.mentor_id = c.id
-                	join codecooler c2
-                	on e.student_id = c2.id
-                	where e."date" = (
-                		select min(e2.date)
-                		from exam e2
-                		where e."module" = e2."module"
-                		and e.student_id = e2.student_id
-                	)
-                	and e.mentor_id = :mentorId
-                	and e.success = false
-                )
-                select\s
-                    case\s
-                        when failCount.fails + passCount.passes = 0 then null
-                        else (passCount.passes::float / (failCount.fails + passCount.passes))
-                    end
-                from passCount, failCount;
-            """, nativeQuery = true)
-    Optional <Double> getPassRatioOnFirstExams(long mentorId);
+                        select count(*)
+                        from exam e
+                        where e.student_id = :studentId
+                        and e."module" = :moduleStr
+                    """, nativeQuery = true)
+    int findNumberOfAttempts(long studentId, String moduleStr);
 
     @Query(value = """
-                with passCount as (
-                	select count(*) as passes
-                	from exam e
-                	join codecooler c
-                	on e.mentor_id = c.id
-                	join codecooler c2
-                	on e.student_id = c2.id
-                	where e."date" = (
-                		select max(e2.date)
-                		from exam e2
-                		where e."module" = e2."module"
-                		and e.student_id = e2.student_id
-                	)
-                	and e.mentor_id = :mentorId
-                	and e.success
-                ),
-                failCount as (
-                	select count(*) as fails
-                	from exam e
-                	join codecooler c
-                	on e.mentor_id = c.id
-                	join codecooler c2
-                	on e.student_id = c2.id
-                	where e."date" = (
-                		select max(e2.date)
-                		from exam e2
-                		where e."module" = e2."module"
-                		and e.student_id = e2.student_id
-                	)
-                	and e.mentor_id = :mentorId
-                	and e.success = false
-                )
-                select\s
-                    case\s
-                        when failCount.fails + passCount.passes = 0 then null
-                        else (passCount.passes::float / (failCount.fails + passCount.passes))
-                    end
-                from passCount, failCount;
-            """, nativeQuery = true)
-    Optional <Double> getPassRatioOnLastExams(long mentorId);
+                        WITH passCount AS (
+                            SELECT COUNT(*) AS passes
+                            FROM exam e
+                            WHERE e.attemptcount = :attemptCount
+                            AND e.mentor_id = :mentorId
+                            AND e.success
+                        ),
+                        failCount AS (
+                            SELECT COUNT(*) AS fails
+                            FROM exam e
+                            WHERE e.attemptcount = :attemptCount
+                            AND e.mentor_id = :mentorId
+                            AND e.success = false
+                        )
+                        SELECT
+                            CASE
+                                WHEN failCount.fails + passCount.passes = 0 THEN -1
+                                ELSE (passCount.passes::float / (failCount.fails + passCount.passes))
+                            END AS pass_ratio
+                        FROM passCount, failCount;
+                    """, nativeQuery = true)
+    double findPassRatio(long mentorId, int attemptCount);
+
+    @Query("SELECT MAX(e.attemptCount) FROM Exam e")
+    Integer findHighestAttemptCount();
 }
