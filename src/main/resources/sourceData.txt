@@ -1,6 +1,6 @@
 {
   "module": "ProgBasics",
-  "mentor": "peter.szarka@codecool.com",
+  "mentor": "artur.kovacs@codecool.com",
   "student": "foo@bar.com",
   "date": "2024-02-01",
   "cancelled": true,
@@ -9,7 +9,7 @@
 ###
 {
   "module": "ProgBasics",
-  "mentor": "peter.szarka@codecool.com",
+  "mentor": "artur.kovacs@codecool.com",
   "student": "foo@bar.com",
   "date": "2024-02-05",
   "cancelled": false,
@@ -53,7 +53,7 @@
 ###
 {
   "module": "Web",
-  "mentor": "peter.szarka@codecool.com",
+  "mentor": "artur.kovacs@codecool.com",
   "student": "foo@bar.com",
   "date": "2024-05-21",
   "cancelled": false,
@@ -171,7 +171,7 @@
 ###
 {
   "module": "oop",
-  "mentor": "peter.szarka@codecool.com",
+  "mentor": "artur.kovacs@codecool.com",
   "student": "foo@bar.com",
   "date": "2024-07-05",
   "cancelled": true,
@@ -193,16 +193,16 @@
 ###
 {
   "module": "oop",
-  "mentor": "peter.szarka@codecool.com",
+  "mentor": "artur.kovacs@codecool.com",
   "student": "foo2@bar.com",
   "date": "2023-11-20",
   "cancelled": false,
-  "success": false,
+  "success": true,
   "comment": "Needs improvement.",
   "results": [
     {
       "dimension": "TECHNICAL_LANGUAGE",
-      "result": 19
+      "result": 69
     },
     {
       "dimension": "BACKEND_PROGRAMMING",
@@ -257,9 +257,7 @@
   "student": "foo2@bar.com",
   "date": "2023-11-24",
   "cancelled": true,
-  "success": true,
-  "comment": "Excellent work.",
-  "results": []
+  "comment": "My hair was set on fire"
 }
 ###
 {
@@ -268,9 +266,7 @@
   "student": "foo3@bar.com",
   "date": "2024-04-10",
   "cancelled": true,
-  "success": true,
-  "comment": "Good progress.",
-  "results": []
+  "comment": "An anaconda ate my pants"
 }
 ###
 {
@@ -320,7 +316,7 @@
     },
     {
       "dimension": "COMMUNICATION",
-      "result": 27
+      "result": 97
     }
   ]
 }
@@ -359,7 +355,7 @@
 ###
 {
   "module": "oop",
-  "mentor": "peter.szarka@codecool.com",
+  "mentor": "artur.kovacs@codecool.com",
   "student": "foo2@bar.com",
   "date": "2023-12-19",
   "cancelled": false,
@@ -400,7 +396,7 @@
     },
     {
       "dimension": "THEORETICAL_KNOWLEDGE",
-      "result": 13
+      "result": 93
     },
     {
       "dimension": "CLEAN_CODE",
@@ -408,7 +404,7 @@
     },
     {
       "dimension": "THEORETICAL_KNOWLEDGE",
-      "result": 9
+      "result": 109
     },
     {
       "dimension": "CODE_NAVIGATION",
@@ -451,9 +447,7 @@
   "student": "foo3@bar.com",
   "date": "2024-04-14",
   "cancelled": true,
-  "success": true,
-  "comment": "Excellent work.",
-  "results": []
+  "comment": "Foo was fish-slapped by a monty python"
 }
 ###
 {
@@ -462,8 +456,8 @@
   "student": "foo3@bar.com",
   "date": "2024-07-27",
   "cancelled": false,
-  "success": false,
-  "comment": "Needs improvement.",
+  "success": true,
+  "comment": "Needs improvement, it's a go for now.",
   "results": [
     {
       "dimension": "GEEKNESS",
@@ -471,7 +465,7 @@
     },
     {
       "dimension": "OOP",
-      "result": 58
+      "result": 61
     },
     {
       "dimension": "COMMUNICATION",
@@ -490,7 +484,7 @@
 ###
 {
   "module": "progbasics",
-  "mentor": "peter.szarka@codecool.com",
+  "mentor": "artur.kovacs@codecool.com",
   "student": "foo2@bar.com",
   "date": "2023-10-13",
   "cancelled": false,
@@ -554,9 +548,7 @@
   "student": "foo3@bar.com",
   "date": "2023-12-22",
   "cancelled": true,
-  "success": false,
-  "comment": "Needs improvement.",
-  "results": []
+  "comment": "Foo transformed to a crocodile, and ate a mentor"
 }
 ###
 {
@@ -565,9 +557,7 @@
   "student": "foo2@bar.com",
   "date": "2023-10-30",
   "cancelled": true,
-  "success": false,
-  "comment": "Excellent work.",
-  "results": []
+  "comment": "Foo came to the exam with his lawyer"
 }
 ###
 {
@@ -608,12 +598,12 @@
   "student": "foo3@bar.com",
   "date": "2023-11-13",
   "cancelled": false,
-  "success": false,
+  "success": true,
   "comment": "Good progress.",
   "results": [
     {
       "dimension": "INTERPERSONAL_COMMUNICATION",
-      "result": 41
+      "result": 89
     },
     {
       "dimension": "TECHNICAL_LANGUAGE",
@@ -660,13 +650,11 @@
 ###
 {
   "module": "progbasics",
-  "mentor": "peter.szarka@codecool.com",
+  "mentor": "artur.kovacs@codecool.com",
   "student": "foo3@bar.com",
   "date": "2024-03-24",
   "cancelled": true,
-  "success": false,
-  "comment": "Excellent work.",
-  "results": []
+  "comment": "Interdimensional portal swallowed codecool, we are in a universe where everyone is Micheal Jackson"
 }
 ###
 {
@@ -675,9 +663,8 @@
   "student": "foo2@bar.com",
   "date": "2023-11-05",
   "cancelled": true,
-  "success": true,
-  "comment": "Good progress.",
-  "results": []
+  "success": false,
+  "comment": "I'm not in the mood for this exam sorry foo"
 }
 ###
 {
@@ -685,10 +672,31 @@
   "mentor": "artur.kovacs@codecool.com",
   "student": "foo@bar.com",
   "date": "2024-08-05",
-  "cancelled": true,
+  "cancelled": false,
   "success": true,
   "comment": "Good progress.",
-  "results": []
+  "results": [
+    {
+      "dimension": "PROGRAMMING_SKILLS",
+      "result": 59
+    },
+    {
+      "dimension": "HTML",
+      "result": 104
+    },
+    {
+      "dimension": "OOP",
+      "result": 35
+    },
+    {
+      "dimension": "BACKEND_PROGRAMMING",
+      "result": 30
+    },
+    {
+      "dimension": "COMMUNICATION",
+      "result": 48
+    }
+  ]
 }
 ###
 {
@@ -789,11 +797,11 @@
 ###
 {
   "module": "progbasics",
-  "mentor": "peter.szarka@codecool.com",
+  "mentor": "artur.kovacs@codecool.com",
   "student": "foo2@bar.com",
   "date": "2024-08-10",
   "cancelled": false,
-  "success": false,
+  "success": true,
   "comment": "Good progress.",
   "results": [
     {
@@ -802,7 +810,7 @@
     },
     {
       "dimension": "CLEAN_CODE",
-      "result": 38
+      "result": 67
     },
     {
       "dimension": "HTML",
@@ -810,11 +818,11 @@
     },
     {
       "dimension": "CODE_NAVIGATION",
-      "result": 29
+      "result": 98
     },
     {
       "dimension": "OOP",
-      "result": 50
+      "result": 76
     }
   ]
 }
@@ -856,9 +864,7 @@
   "student": "foo2@bar.com",
   "date": "2024-06-16",
   "cancelled": true,
-  "success": true,
-  "comment": "Needs improvement.",
-  "results": []
+  "comment": "Needs improvement."
 }
 ###
 {
@@ -867,9 +873,7 @@
   "student": "foo3@bar.com",
   "date": "2023-11-30",
   "cancelled": true,
-  "success": true,
-  "comment": "Excellent work.",
-  "results": []
+  "comment": "Excellent work."
 }
 ###
 {
@@ -878,20 +882,20 @@
   "student": "foo3@bar.com",
   "date": "2024-07-24",
   "cancelled": false,
-  "success": false,
+  "success": true,
   "comment": "Excellent work.",
   "results": [
     {
       "dimension": "JAVA",
-      "result": 25
+      "result": 105
     },
     {
       "dimension": "CODE_NAVIGATION",
-      "result": 21
+      "result": 111
     },
     {
       "dimension": "GEEKNESS",
-      "result": 32
+      "result": 112
     },
     {
       "dimension": "CODING",
@@ -899,7 +903,7 @@
     },
     {
       "dimension": "JAVA",
-      "result": 24
+      "result": 84
     }
   ]
 }
@@ -910,20 +914,16 @@
   "student": "foo2@bar.com",
   "date": "2024-08-22",
   "cancelled": true,
-  "success": false,
-  "comment": "Excellent work.",
-  "results": []
+  "comment": "Excellent work."
 }
 ###
 {
   "module": "progbasics",
-  "mentor": "peter.szarka@codecool.com",
+  "mentor": "artur.kovacs@codecool.com",
   "student": "foo3@bar.com",
   "date": "2024-02-20",
   "cancelled": true,
-  "success": true,
-  "comment": "Excellent work.",
-  "results": []
+  "comment": "Excellent work."
 }
 ###
 {
@@ -937,7 +937,7 @@
   "results": [
     {
       "dimension": "BACKEND_PROGRAMMING",
-      "result": 43
+      "result": 93
     },
     {
       "dimension": "INTERPERSONAL_COMMUNICATION",
@@ -945,7 +945,7 @@
     },
     {
       "dimension": "OOP",
-      "result": 55
+      "result": 65
     }
   ]
 }
@@ -956,7 +956,7 @@
   "student": "foo@bar.com",
   "date": "2023-12-20",
   "cancelled": false,
-  "success": false,
+  "success": true,
   "comment": "Needs improvement.",
   "results": [
     {
@@ -973,7 +973,7 @@
     },
     {
       "dimension": "OOP",
-      "result": 24
+      "result": 84
     },
     {
       "dimension": "INTERPERSONAL_COMMUNICATION",
@@ -995,16 +995,16 @@
 ###
 {
   "module": "web",
-  "mentor": "peter.szarka@codecool.com",
+  "mentor": "artur.kovacs@codecool.com",
   "student": "foo3@bar.com",
   "date": "2023-12-09",
   "cancelled": false,
-  "success": false,
+  "success": true,
   "comment": "Excellent work.",
   "results": [
     {
       "dimension": "THEORETICAL_KNOWLEDGE",
-      "result": 33
+      "result": 88
     },
     {
       "dimension": "THEORETICAL_KNOWLEDGE",
@@ -1012,7 +1012,7 @@
     },
     {
       "dimension": "PROGRAMMING_SKILLS",
-      "result": 17
+      "result": 99
     }
   ]
 }
@@ -1023,9 +1023,7 @@
   "student": "foo@bar.com",
   "date": "2024-06-14",
   "cancelled": true,
-  "success": true,
-  "comment": "Excellent work.",
-  "results": []
+  "comment": "Excellent work."
 }
 ###
 {
@@ -1034,8 +1032,8 @@
   "student": "foo@bar.com",
   "date": "2024-02-01",
   "cancelled": false,
-  "success": false,
-  "comment": "Needs improvement.",
+  "success": true,
+  "comment": "Excellent work.",
   "results": [
     {
       "dimension": "TECHNICAL_LANGUAGE",
@@ -1043,20 +1041,18 @@
     },
     {
       "dimension": "JAVA",
-      "result": 31
+      "result": 91
     }
   ]
 }
 ###
 {
   "module": "progbasics",
-  "mentor": "peter.szarka@codecool.com",
+  "mentor": "artur.kovacs@codecool.com",
   "student": "foo2@bar.com",
   "date": "2024-04-07",
   "cancelled": true,
-  "success": false,
-  "comment": "Needs improvement.",
-  "results": []
+  "comment": "Needs improvement."
 }
 ###
 {
