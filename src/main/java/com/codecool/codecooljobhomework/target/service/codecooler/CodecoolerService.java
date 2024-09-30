@@ -1,8 +1,8 @@
 package com.codecool.codecooljobhomework.target.service.codecooler;
 
-import com.codecool.codecooljobhomework.target.controller.codecooler.NewCodecoolerDto;
-import com.codecool.codecooljobhomework.target.controller.dto.MentorStatisticsReport;
-import com.codecool.codecooljobhomework.target.exceptionhandling.exception.CodecoolerNotFoundException;
+import com.codecool.codecooljobhomework.target.controller.codecooler.dto.NewCodecoolerDto;
+import com.codecool.codecooljobhomework.target.controller.codecooler.dto.MentorStatisticsReport;
+import com.codecool.codecooljobhomework.target.exception.CodecoolerNotFoundException;
 import com.codecool.codecooljobhomework.target.entity.codecooler.Codecooler;
 import com.codecool.codecooljobhomework.target.entity.codecooler.Position;
 import com.codecool.codecooljobhomework.target.entity.exam.results.DimensionEnum;

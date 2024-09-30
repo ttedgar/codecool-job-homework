@@ -1,6 +1,6 @@
-package com.codecool.codecooljobhomework.target.exceptionhandling;
+package com.codecool.codecooljobhomework.target.controller;
 
-import com.codecool.codecooljobhomework.target.exceptionhandling.exception.*;
+import com.codecool.codecooljobhomework.target.exception.CodecoolerNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;

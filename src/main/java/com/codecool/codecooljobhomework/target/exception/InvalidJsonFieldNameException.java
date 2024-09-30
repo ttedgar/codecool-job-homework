@@ -1,4 +1,4 @@
-package com.codecool.codecooljobhomework.target.exceptionhandling.exception;
+package com.codecool.codecooljobhomework.target.exception;
 
 public class InvalidJsonFieldNameException extends SynchronizationException {
     public InvalidJsonFieldNameException(String message) {

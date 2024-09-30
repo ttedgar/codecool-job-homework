@@ -1,7 +1,8 @@
 package com.codecool.codecooljobhomework.target.controller.exam;
 
+import com.codecool.codecooljobhomework.target.controller.exam.dto.NewExamDto;
 import com.codecool.codecooljobhomework.target.entity.exam.Exam;
-import com.codecool.codecooljobhomework.target.controller.dto.DataTransferReport;
+import com.codecool.codecooljobhomework.target.controller.exam.dto.DataTransferReport;
 import com.codecool.codecooljobhomework.target.service.exam.ExamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;

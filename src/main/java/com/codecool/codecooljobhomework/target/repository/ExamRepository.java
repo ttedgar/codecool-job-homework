@@ -1,6 +1,5 @@
 package com.codecool.codecooljobhomework.target.repository;
 
-import com.codecool.codecooljobhomework.target.controller.dto.MentorStatisticsReport;
 import com.codecool.codecooljobhomework.target.entity.exam.Exam;
 import com.codecool.codecooljobhomework.target.entity.exam.Module;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,19 +8,14 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 @Repository
 public interface ExamRepository extends JpaRepository<Exam, Long> {
 
-    List<Exam> findByModuleAndStudentEmail(Module module, String studentEmail);
-
     @Query("SELECT e.sourceId from Exam e")
     List<Long> findAllSourceIds();
-
-    Exam findFirstByModuleAndStudentEmailAndDateAfter(Module module, String studentEmail, LocalDate currentDate);
 
     @Query(value = """
                         WITH latestExams AS (

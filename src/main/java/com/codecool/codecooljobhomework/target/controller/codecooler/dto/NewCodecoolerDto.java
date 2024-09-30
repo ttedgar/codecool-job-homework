@@ -1,4 +1,4 @@
-package com.codecool.codecooljobhomework.target.controller.codecooler;
+package com.codecool.codecooljobhomework.target.controller.codecooler.dto;
 
 import com.codecool.codecooljobhomework.target.entity.codecooler.Position;
 

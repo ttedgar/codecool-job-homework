@@ -1,5 +1,6 @@
 package com.codecool.codecooljobhomework.target.controller.codecooler;
 
+import com.codecool.codecooljobhomework.target.controller.codecooler.dto.NewCodecoolerDto;
 import com.codecool.codecooljobhomework.target.entity.exam.results.Result;
 import com.codecool.codecooljobhomework.target.service.codecooler.CodecoolerService;
 import org.springframework.beans.factory.annotation.Autowired;

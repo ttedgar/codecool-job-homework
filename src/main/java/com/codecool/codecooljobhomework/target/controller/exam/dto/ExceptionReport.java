@@ -1,4 +1,4 @@
-package com.codecool.codecooljobhomework.target.controller.dto;
+package com.codecool.codecooljobhomework.target.controller.exam.dto;
 
 import lombok.Getter;
 import lombok.Setter;

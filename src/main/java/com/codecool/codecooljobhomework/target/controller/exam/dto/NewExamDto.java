@@ -1,4 +1,4 @@
-package com.codecool.codecooljobhomework.target.controller.exam;
+package com.codecool.codecooljobhomework.target.controller.exam.dto;
 
 import com.codecool.codecooljobhomework.target.entity.exam.Module;
 import com.codecool.codecooljobhomework.target.entity.exam.results.Result;

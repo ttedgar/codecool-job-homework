@@ -2,8 +2,8 @@ package com.codecool.codecooljobhomework.target.service.exam;
 
 import com.codecool.codecooljobhomework.source.entity.Source;
 import com.codecool.codecooljobhomework.source.repository.SourceRepository;
-import com.codecool.codecooljobhomework.target.controller.exam.NewExamDto;
-import com.codecool.codecooljobhomework.target.exceptionhandling.exception.*;
+import com.codecool.codecooljobhomework.target.controller.exam.dto.NewExamDto;
+import com.codecool.codecooljobhomework.target.exception.*;
 import com.codecool.codecooljobhomework.target.entity.codecooler.Codecooler;
 import com.codecool.codecooljobhomework.target.entity.codecooler.Position;
 import com.codecool.codecooljobhomework.target.entity.exam.Exam;
@@ -12,8 +12,8 @@ import com.codecool.codecooljobhomework.target.entity.exam.results.DimensionEnum
 import com.codecool.codecooljobhomework.target.entity.exam.results.Result;
 import com.codecool.codecooljobhomework.target.repository.CodeCoolerRepository;
 import com.codecool.codecooljobhomework.target.repository.ExamRepository;
-import com.codecool.codecooljobhomework.target.controller.dto.DataTransferReport;
-import com.codecool.codecooljobhomework.target.controller.dto.ExceptionReport;
+import com.codecool.codecooljobhomework.target.controller.exam.dto.DataTransferReport;
+import com.codecool.codecooljobhomework.target.controller.exam.dto.ExceptionReport;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;

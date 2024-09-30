@@ -2,7 +2,7 @@ package com.codecool.codecooljobhomework;
 
 import com.codecool.codecooljobhomework.source.entity.Source;
 import com.codecool.codecooljobhomework.source.repository.SourceRepository;
-import com.codecool.codecooljobhomework.target.exceptionhandling.exception.InvalidEmailException;
+import com.codecool.codecooljobhomework.target.exception.InvalidEmailException;
 import com.codecool.codecooljobhomework.target.entity.codecooler.Codecooler;
 import com.codecool.codecooljobhomework.target.entity.codecooler.Position;
 import com.codecool.codecooljobhomework.target.entity.exam.Exam;
