@@ -1,4 +1,4 @@
-package com.codecool.codecooljobhomework.target.controlleradvice.exception;
+package com.codecool.codecooljobhomework.target.exceptionhandling.exception;
 
 public class AmbivalentResultAndSuccessDataException extends SynchronizationException {
     public AmbivalentResultAndSuccessDataException(String message) {

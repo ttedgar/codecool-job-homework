@@ -1,5 +1,6 @@
 package com.codecool.codecooljobhomework.target.repository;
 
+import com.codecool.codecooljobhomework.target.controller.dto.MentorStatisticsReport;
 import com.codecool.codecooljobhomework.target.entity.exam.Exam;
 import com.codecool.codecooljobhomework.target.entity.exam.Module;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,7 +9,9 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface ExamRepository extends JpaRepository<Exam, Long> {
@@ -63,14 +66,14 @@ public interface ExamRepository extends JpaRepository<Exam, Long> {
                             AND e.mentor_id = :mentorId
                             AND e.success = false
                         )
-                        SELECT
+                        SELECT passCount.passes, failCount.fails,
                             CASE
                                 WHEN failCount.fails + passCount.passes = 0 THEN -1
                                 ELSE (passCount.passes::float / (failCount.fails + passCount.passes))
                             END AS pass_ratio
                         FROM passCount, failCount;
                     """, nativeQuery = true)
-    double findPassRatio(long mentorId, int attemptCount);
+    Map findPassRatio(long mentorId, int attemptCount);
 
     @Query("SELECT MAX(e.attemptCount) FROM Exam e")
     Integer findHighestAttemptCount();

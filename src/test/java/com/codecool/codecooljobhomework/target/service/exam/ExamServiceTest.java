@@ -2,10 +2,13 @@ package com.codecool.codecooljobhomework.target.service.exam;
 
 import com.codecool.codecooljobhomework.source.entity.Source;
 import com.codecool.codecooljobhomework.source.repository.SourceRepository;
+import com.codecool.codecooljobhomework.target.exceptionhandling.exception.InvalidEmailException;
 import com.codecool.codecooljobhomework.target.entity.codecooler.Codecooler;
 import com.codecool.codecooljobhomework.target.entity.codecooler.Position;
 import com.codecool.codecooljobhomework.target.repository.CodeCoolerRepository;
 import com.codecool.codecooljobhomework.target.repository.ExamRepository;
+import com.codecool.codecooljobhomework.target.controller.dto.DataTransferReport;
+import com.codecool.codecooljobhomework.target.controller.dto.ExceptionReport;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,19 +46,19 @@ class ExamServiceTest {
     }
 
     @Test
-    void testSynchronizeWithNoNewSource() {
+    void testSynchronizeSourceAndTargetDbsWithNoNewSource() {
         when(sourceRepository.findAllIds()).thenReturn(List.of(1L, 2L, 3L));
         when(examRepository.findAllSourceIds()).thenReturn(List.of(1L, 2L, 3L));
         DataTransferReport expectedReport = new DataTransferReport();
 
-        DataTransferReport actualReport = examService.synchronize();
+        DataTransferReport actualReport = examService.synchronizeSourceAndTargetDbs();
 
         assertEquals(expectedReport, actualReport);
     }
 
 
     @Test
-    void testSynchronizeWithOneNewSource() throws JsonProcessingException {
+    void testSynchronizeSourceAndTargetDbsWithOneNewSource() throws JsonProcessingException {
         when(sourceRepository.findAllIds()).thenReturn(List.of(1L, 2L, 3L));
         when(examRepository.findAllSourceIds()).thenReturn(List.of(1L, 2L));
         Source source = new Source();
@@ -85,13 +88,13 @@ class ExamServiceTest {
         DataTransferReport expectedReport = new DataTransferReport();
         expectedReport.incrementSuccessfulTransfers();
 
-        DataTransferReport actualReport = examService.synchronize();
+        DataTransferReport actualReport = examService.synchronizeSourceAndTargetDbs();
 
         assertEquals(expectedReport, actualReport);
     }
 
     @Test
-    void testSynchronizeWithOneNewSourceWithInvalidMentorEmail() throws JsonProcessingException {
+    void testSynchronizeSourceAndTargetDbsWithOneNewSourceWithInvalidMentorEmail() throws JsonProcessingException {
         when(sourceRepository.findAllIds()).thenReturn(List.of(1L, 2L, 3L));
         when(examRepository.findAllSourceIds()).thenReturn(List.of(1L, 2L));
         Source source = new Source();
@@ -119,10 +122,10 @@ class ExamServiceTest {
         when(codeCoolerRepository.findByEmailAndPosition("foo@bar.com", Position.STUDENT))
                 .thenReturn(Optional.of(new Codecooler()));
         DataTransferReport expectedReport = new DataTransferReport();
-        expectedReport.incrementFailedTransfers();
-        expectedReport.addExceptionMessage("peter.szarka@codecool.com is not a valid mentor email. SourceId: 3");
+        ExceptionReport exceptionReport = new ExceptionReport("peter.szarka@codecool.com is not a valid mentor email. SourceId: 3", InvalidEmailException.class);
+        expectedReport.addExceptionReport(exceptionReport);
 
-        DataTransferReport actualReport = examService.synchronize();
+        DataTransferReport actualReport = examService.synchronizeSourceAndTargetDbs();
 
         assertEquals(expectedReport, actualReport);
     }

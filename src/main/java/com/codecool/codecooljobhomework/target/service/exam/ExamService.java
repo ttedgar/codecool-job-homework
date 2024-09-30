@@ -3,7 +3,7 @@ package com.codecool.codecooljobhomework.target.service.exam;
 import com.codecool.codecooljobhomework.source.entity.Source;
 import com.codecool.codecooljobhomework.source.repository.SourceRepository;
 import com.codecool.codecooljobhomework.target.controller.exam.NewExamDto;
-import com.codecool.codecooljobhomework.target.controlleradvice.exception.*;
+import com.codecool.codecooljobhomework.target.exceptionhandling.exception.*;
 import com.codecool.codecooljobhomework.target.entity.codecooler.Codecooler;
 import com.codecool.codecooljobhomework.target.entity.codecooler.Position;
 import com.codecool.codecooljobhomework.target.entity.exam.Exam;
@@ -12,9 +12,13 @@ import com.codecool.codecooljobhomework.target.entity.exam.results.DimensionEnum
 import com.codecool.codecooljobhomework.target.entity.exam.results.Result;
 import com.codecool.codecooljobhomework.target.repository.CodeCoolerRepository;
 import com.codecool.codecooljobhomework.target.repository.ExamRepository;
+import com.codecool.codecooljobhomework.target.controller.dto.DataTransferReport;
+import com.codecool.codecooljobhomework.target.controller.dto.ExceptionReport;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +38,7 @@ public class ExamService {
     private final CodeCoolerRepository codeCoolerRepository;
     private final SourceRepository sourceRepository;
     private final ObjectMapper objectMapper;
+    private static final Logger logger = LoggerFactory.getLogger(ExamService.class);
 
     @Autowired
     public ExamService(ExamRepository examRepository,
@@ -56,11 +61,19 @@ public class ExamService {
         Exam exam = new Exam();
         Codecooler student = codeCoolerRepository
                 .findByEmailAndPosition(newExamDto.studentEmail(), Position.STUDENT)
-                .orElseThrow(() -> new CodecoolerNotFoundException(newExamDto.studentEmail() + " is not a valid student email"));
+                .orElseThrow(() -> {
+                    String errorMessage = newExamDto.studentEmail() + " is not a valid student email";
+                    logger.error(errorMessage);
+                    return new CodecoolerNotFoundException(errorMessage);
+                });
         exam.setStudent(student);
         exam.setMentor(codeCoolerRepository
                 .findByEmailAndPosition(newExamDto.mentorEmail(), Position.MENTOR)
-                .orElseThrow(() -> new CodecoolerNotFoundException(newExamDto.mentorEmail() + " is not a valid mentor email")));
+                .orElseThrow(() -> {
+                    String errorMessage = newExamDto.mentorEmail() + " is not a valid mentor email";
+                    logger.error(errorMessage);
+                    return new CodecoolerNotFoundException(errorMessage);
+                }));
         exam.setCancelled(newExamDto.cancelled());
         exam.setDate(newExamDto.date());
         exam.setModule(newExamDto.module());
@@ -75,7 +88,7 @@ public class ExamService {
         return examRepository.findAll();
     }
 
-    public DataTransferReport synchronize() {
+    public DataTransferReport synchronizeSourceAndTargetDbs() {
         DataTransferReport dataTransferReport = new DataTransferReport();
         if (getMissingSourceIds().isEmpty()) {
             dataTransferReport.setNumberOfSuccessfulTransfers(0);
@@ -87,8 +100,9 @@ public class ExamService {
                 examRepository.save(convertJsonToExam(source));
                 dataTransferReport.incrementSuccessfulTransfers();
             } catch (SynchronizationException e) {
-                dataTransferReport.addExceptionMessage(e.getMessage());
-                dataTransferReport.incrementFailedTransfers();
+
+                logger.error(e.getMessage());
+                dataTransferReport.addExceptionReport(new ExceptionReport(e.getMessage(), e.getClass()));
             }
         }
         return dataTransferReport;
@@ -241,7 +255,11 @@ public class ExamService {
 
     public List<Result> getAverages(long studentId) {
         codeCoolerRepository.findByIdAndPosition(studentId, Position.STUDENT)
-                .orElseThrow(() -> new CodecoolerNotFoundException("There is no student with this Id. studentId: " + studentId));
+                .orElseThrow(() -> {
+                    String errorMessage = studentId + " is not a valid studentId";
+                    logger.error(errorMessage);
+                    return new CodecoolerNotFoundException(errorMessage);
+                });
 
         List<Object[]> results = examRepository.findAverageResultsOfLatestExamsByStudentId(studentId);
         List<Result> resultList = new ArrayList<>();
